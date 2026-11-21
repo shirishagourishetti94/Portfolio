@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UX Case Study: The Missing Letters — IRCTC Passenger Name Inconsistency</title>
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --surface-alt: #f0f4fa;
+    --ink: #0f172a;
+    --ink-muted: #475569;
+    --ink-subtle: #64748b;
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --primary-soft: #dbeafe;
+    --accent: #0f766e;
+    --accent-soft: #ccfbf1;
+    --warn: #b45309;
+    --warn-soft: #fef3c7;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
+    --success: #15803d;
+    --success-soft: #dcfce7;
+    --border: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Navigation */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+  }
+
+  .top-nav-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .brand-tag {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .brand-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: inline-block;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+  }
+
+  .nav-links a {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.25rem 0.45rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
+    color: #ffffff;
+    padding: 4.5rem 1.5rem 4rem;
+  }
+
+  .hero-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: #e0f2fe;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    max-width: 820px;
+    margin-bottom: 1rem;
+  }
+
+  .hero p.lead {
+    font-size: 1.12rem;
+    color: #cbd5e1;
+    max-width: 760px;
+    margin-bottom: 2rem;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+  }
+
+  .meta-item span {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #93c5fd;
+    margin-bottom: 0.2rem;
+  }
+
+  .meta-item strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+
+  section.case-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .section-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    margin-bottom: 0.35rem;
+  }
+
+  h2 {
+    font-size: 1.65rem;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 1.5rem 0 0.65rem;
+  }
+
+  p {
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+  }
+
+  ul, ol {
+    padding-left: 1.35rem;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.45rem;
+  }
+
+  li strong {
+    color: var(--ink);
+  }
+
+  /* Callouts & Cards */
+  .callout {
+    background: var(--surface-alt);
+    border-left: 4px solid var(--primary);
+    padding: 1.1rem 1.25rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 1.25rem 0;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .callout.warn {
+    background: var(--warn-soft);
+    border-left-color: var(--warn);
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin: 1.25rem 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.15rem;
+    margin: 1.25rem 0;
+  }
+
+  .card {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+  }
+
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+    color: var(--ink);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  .badge-success { background: var(--success-soft); color: var(--success); }
+  .badge-danger { background: var(--danger-soft); color: var(--danger); }
+  .badge-warn { background: var(--warn-soft); color: var(--warn); }
+  .badge-info { background: var(--primary-soft); color: var(--primary-dark); }
+
+  /* Evidence Diff Banner */
+  .evidence-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+  }
+
+  .evidence-box {
+    border-radius: var(--radius-md);
+    padding: 1.35rem;
+    border: 1px solid var(--border);
+  }
+
+  .evidence-box.source {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  .evidence-box.output {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .mono-highlight {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1.18rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    margin: 0.65rem 0;
+    display: block;
+  }
+
+  .missing-chars {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    text-decoration: underline wavy #dc2626;
+  }
+
+  /* Flow Diagrams */
+  .flow-wrapper {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+  }
+
+  .flow-track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .flow-node {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    min-width: 150px;
+  }
+
+  .flow-node small {
+    display: block;
+    font-weight: 400;
+    color: var(--ink-subtle);
+    font-size: 0.74rem;
+    margin-top: 0.15rem;
+  }
+
+  .flow-node.issue {
+    background: #fef2f2;
+    border: 2px solid #dc2626;
+    color: #991b1b;
+  }
+
+  .flow-node.new-step {
+    background: #eff6ff;
+    border: 2px solid #2563eb;
+    color: #1e3a8a;
+  }
+
+  .flow-node.verified-step {
+    background: #f0fdf4;
+    border: 2px solid #16a34a;
+    color: #14532d;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: #ffffff;
+  }
+
+  th, td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Phone Mockups Showcase */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .screen-showcase-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .screen-caption {
+    text-align: center;
+    margin-bottom: 0.85rem;
+  }
+
+  .screen-caption span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--primary);
+    display: block;
+  }
+
+  .screen-caption h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .phone-frame {
+    width: 320px;
+    background: #0f172a;
+    border-radius: 36px;
+    padding: 12px;
+    box-shadow: 0 22px 40px -12px rgba(15, 23, 42, 0.25);
+    border: 2px solid #334155;
+  }
+
+  .phone-screen {
+    background: #f8fafc;
+    border-radius: 26px;
+    overflow: hidden;
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    color: #0f172a;
+  }
+
+  /* Status Bar */
+  .p-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 1rem 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .p-status.irctc-orange {
+    background: linear-gradient(90deg, #ea580c, #f97316);
+    color: #ffffff;
+  }
+
+  .p-status.modern-blue {
+    background: #0f294a;
+    color: #ffffff;
+  }
+
+  .p-status.ers-white {
+    background: #ffffff;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  /* Existing App UI Styles */
+  .irctc-appbar {
+    background: linear-gradient(90deg, #ea580c, #fb923c);
+    color: #ffffff;
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+
+  .irctc-row {
+    background: #ffffff;
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .irctc-row.highlight-row {
+    background: #fffbeb;
+    border-left: 3px solid #16a34a;
+  }
+
+  .irctc-row strong {
+    display: block;
+    font-size: 0.8rem;
+    color: #0f172a;
+  }
+
+  .irctc-row p {
+    margin: 0.1rem 0;
+    font-size: 0.71rem;
+    color: #475569;
+    line-height: 1.38;
+  }
+
+  .irctc-edit {
+    color: #2563eb;
+    font-size: 0.74rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .irctc-info-banner {
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 0.68rem;
+    padding: 0.65rem 0.85rem;
+    line-height: 1.4;
+  }
+
+  .irctc-legend {
+    background: #ffffff;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.72rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .irctc-tabbar {
+    margin-top: auto;
+    background: #ffffff;
+    border-top: 1px solid #cbd5e1;
+    display: flex;
+    justify-content: space-around;
+    padding: 0.45rem 0.25rem;
+    font-size: 0.64rem;
+    color: #64748b;
+    text-align: center;
+  }
+
+  .irctc-tabbar .active {
+    color: #ea580c;
+    font-weight: 700;
+  }
+
+  /* Existing ERS Ticket UI */
+  .ers-doc {
+    padding: 0.75rem;
+    background: #ffffff;
+    flex: 1;
+    font-size: 0.7rem;
+  }
+
+  .ers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid #1e3a8a;
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .ers-title {
+    font-weight: 800;
+    color: #1e3a8a;
+    font-size: 0.74rem;
+  }
+
+  .ers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.6rem;
+  }
+
+  .ers-grid div span {
+    display: block;
+    font-size: 0.6rem;
+    color: #64748b;
+    text-transform: uppercase;
+  }
+
+  .ers-grid div strong {
+    font-size: 0.71rem;
+    color: #0f172a;
+  }
+
+  .ers-pax-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.45rem 0 0.65rem;
+    font-size: 0.66rem;
+  }
+
+  .ers-pax-table th, .ers-pax-table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .ers-pax-table th {
+    background: #e2e8f0;
+    font-size: 0.61rem;
+  }
+
+  .truncated-pill {
+    background: #fee2e2;
+    color: #991b1b;
+    font-weight: 800;
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px dashed #dc2626;
+  }
+
+  .qr-placeholder {
+    width: 54px;
+    height: 54px;
+    background: repeating-conic-gradient(#0f172a 0% 25%, #ffffff 0% 50%) 50% / 10px 10px;
+    border: 1px solid #0f172a;
+    border-radius: 4px;
+  }
+
+  /* Redesigned Modern UI Styles */
+  .mod-appbar {
+    background: #0f294a;
+    color: #ffffff;
+    padding: 0.75rem 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mod-appbar-title {
+    font-weight: 700;
+    font-size: 0.86rem;
+  }
+
+  .mod-step-pill {
+    background: rgba(255, 255, 255, 0.16);
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 600;
+  }
+
+  .mod-body {
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    flex: 1;
+  }
+
+  .mod-helper {
+    font-size: 0.72rem;
+    color: #475569;
+    margin: 0;
+  }
+
+  .mod-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .mod-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #334155;
+  }
+
+  .mod-input {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .mod-input.valid {
+    border-color: #16a34a;
+    background: #f0fdf4;
+  }
+
+  .mod-field-note {
+    font-size: 0.67rem;
+    color: #15803d;
+    font-weight: 600;
+  }
+
+  .mod-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .mod-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .mod-card.selected {
+    border: 2px solid #1d4ed8;
+    background: #eff6ff;
+  }
+
+  .mod-card.match-ok {
+    border: 1.5px solid #16a34a;
+    background: #f0fdf4;
+  }
+
+  .mod-card.match-warn {
+    border: 1.5px solid #d97706;
+    background: #fffbeb;
+  }
+
+  .mod-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .mod-name {
+    font-weight: 800;
+    font-size: 0.81rem;
+    color: #0f172a;
+    letter-spacing: 0.01em;
+  }
+
+  .mod-sub {
+    font-size: 0.7rem;
+    color: #475569;
+    margin-bottom: 0.35rem;
+  }
+
+  .mod-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .mod-pill.ok { background: #dcfce7; color: #166534; }
+  .mod-pill.warn { background: #fef3c7; color: #92400e; }
+  .mod-pill.neutral { background: #e2e8f0; color: #334155; }
+  .mod-pill.blue { background: #dbeafe; color: #1e40af; }
+
+  .mod-btn-primary {
+    margin-top: auto;
+    background: #1d4ed8;
+    color: #ffffff;
+    text-align: center;
+    padding: 0.68rem 0.85rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.78rem;
+  }
+
+  .mod-btn-secondary {
+    display: inline-block;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #1e3a8a;
+    padding: 0.38rem 0.65rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    margin-top: 0.4rem;
+  }
+
+  .kv-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.71rem;
+    padding: 0.24rem 0;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+
+  .kv-line:last-child {
+    border-bottom: none;
+  }
+
+  .kv-line span {
+    color: #64748b;
+  }
+
+  .kv-line strong {
+    color: #0f172a;
+    text-align: right;
+  }
+
+  /* LinkedIn Box */
+  .linkedin-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    font-size: 0.94rem;
+    color: var(--ink);
+  }
+
+  .linkedin-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .li-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #0a66c2;
+    color: #ffffff;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: var(--ink-subtle);
+    font-size: 0.84rem;
+    border-top: 1px solid var(--border);
+    background: #ffffff;
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <div class="brand-tag"><a href="https://shirishagourishetti94.github.io/Portfolio/" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:0.5rem;"><span class="brand-dot"></span> &larr; PORTFOLIO / THE MISSING LETTERS</a></div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#discovery">Evidence</a>
+      <a href="#as-is">As-Is Flow</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#journey">Journey Map</a>
+      <a href="#to-be">To-Be Flow</a>
+      <a href="#existing-ui">Existing Screens</a>
+      <a href="#redesign-ui">Proposed Redesign</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#metrics">KPIs</a>
+      <a href="#linkedin">LinkedIn Post</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Mobile-First Product Design • Usability Investigation</div>
+    <h1>The Missing Letters: Investigating Passenger Name Inconsistency in IRCTC Ticket Booking</h1>
+    <p class="lead">
+      A real-world UX investigation and conceptual mobile redesign examining how a verified passenger name saved in full inside the IRCTC Passenger Master List appeared shortened on the generated Electronic Reservation Slip (ERS).
+    </p>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span>Role</span>
+        <strong>Gourishetti Shirisha • UI/UX Designer</strong>
+      </div>
+      <div class="meta-item">
+        <span>Project Type</span>
+        <strong>Independent UX Observation &amp; Conceptual Redesign</strong>
+      </div>
+      <div class="meta-item">
+        <span>Platform</span>
+        <strong>Mobile-First Ticket Booking Experience</strong>
+      </div>
+      <div class="meta-item">
+        <span>Design Status</span>
+        <strong>Proposed Concept (Unimplemented / Untested)</strong>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- SECTION 1: PROJECT OVERVIEW -->
+  <section id="overview" class="case-section">
+    <div class="section-label">Section 01</div>
+    <h2>Project Overview</h2>
+    <p>
+      <strong>Product Context:</strong> IRCTC (Indian Railway Catering and Tourism Corporation) serves millions of rail travellers across India. To streamline repeat reservations, the mobile booking experience offers a <strong>Passenger Master List</strong> where users store traveller details—including full name, date of birth, gender, berth/catering preferences, and Aadhaar verification status—for reuse during ticket booking.
+    </p>
+    <p>
+      <strong>Problem Summary:</strong> During a live ticket booking flow, a passenger profile saved and verified in the Master List under the full name <strong>PRIYANKA CHAKRABORTY</strong> was selected for travel. However, upon ticket generation, the Electronic Reservation Slip (ERS) printed the passenger's name as <strong>PRIYANKA CHAKRAB</strong>—omitting the final four characters (<code>ORTY</code>) without any pre-booking alert or explanation. Because Indian Railways mandates carrying prescribed original photo ID proof matching ticket details during travel, silent name shortening introduces friction and passenger anxiety.
+    </p>
+    <div class="callout">
+      <strong>Scope &amp; Integrity Note:</strong> All observations in this study are grounded strictly in two primary artifacts from a real booking session (the Passenger Master List screen and the generated ERS). Personal names, dates of birth, and PNR details have been anonymized for privacy while preserving exact character lengths (20 characters vs. 16 characters). No user interviews, usability tests, analytics, or unverified technical root causes are fabricated.
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROBLEM DISCOVERY -->
+  <section id="discovery" class="case-section">
+    <div class="section-label">Section 02</div>
+    <h2>Problem Discovery &amp; Primary Evidence</h2>
+    <p>
+      The discrepancy was discovered immediately after completing a confirmed reservation on Train <strong>20834 / VANDE BHARAT EX</strong> from <strong>SECUNDERABAD JN. (SC)</strong> to <strong>VISAKHAPATNAM (VSKP)</strong> (PNR: <code>48291045XX</code>, Coach/Seat: <code>CNF/C17/46/NO CHOICE</code>).
+    </p>
+
+    <div class="evidence-compare">
+      <div class="evidence-box source">
+        <span class="badge badge-success">Artifact 1 • Passenger Master List</span>
+        <h3>Saved Profile Record</h3>
+        <code class="mono-highlight">PRIYANKA CHAKRABORTY</code>
+        <ul>
+          <li><strong>Character Length:</strong> 20 characters (including space)</li>
+          <li><strong>Demographics:</strong> 34 years, F, NC, NOCONC, Veg</li>
+          <li><strong>Verification Status:</strong> Aadhaar ID/Virtual ID | <strong>Verified</strong></li>
+          <li><strong>Date of Birth on ID:</strong> 14-Aug-1992</li>
+        </ul>
+      </div>
+
+      <div class="evidence-box output">
+        <span class="badge badge-danger">Artifact 2 • Generated ERS Ticket</span>
+        <h3>Printed Ticket Output</h3>
+        <code class="mono-highlight">PRIYANKA CHAKRAB<span class="missing-chars" title="Missing from ERS">ORTY</span></code>
+        <ul>
+          <li><strong>Character Length:</strong> 16 characters (including space)</li>
+          <li><strong>Ticket Demographics:</strong> Age 34, Gender F, Catering VEG</li>
+          <li><strong>Booking / Current Status:</strong> CNF/C17/46/NO CHOICE</li>
+          <li><strong>System Notice:</strong> None surfaced before or after generation</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Observed Facts vs. Investigative Technical Hypotheses</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Confirmed Visual Facts (From Screenshots)</h4>
+        <ul>
+          <li>The Master List displays <strong>PRIYANKA CHAKRABORTY</strong> in full alongside a green check icon and <em>"Verified - Passenger is aadhaar verified."</em></li>
+          <li>The generated ERS displays <strong>PRIYANKA CHAKRAB</strong> in the Passenger Details table while retaining accurate age (34), gender (F), meal option (VEG), and seat status.</li>
+          <li>No warning message indicates that the name was shortened between selection and ticket generation.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Possible Technical Explanations (Unconfirmed)</h4>
+        <ul>
+          <li><strong>Character Length Caps:</strong> Downstream reservation or ERS rendering fields may enforce a 16-character limit not reflected in the Master List UI.</li>
+          <li><strong>String Truncation:</strong> Fixed-width clipping during payload serialization or PDF/ERS template generation.</li>
+          <li><strong>Schema / Data Mapping Differences:</strong> Legacy passenger chart fields mapping differently from newer Master List profile storage.</li>
+          <li><strong>Backend Formatting Rules:</strong> Automated string parsing or formatting transformations applied during ticketing.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="callout warn">
+      <strong>Important Boundary:</strong> While Aadhaar verification status is visible on the Master List entry, Aadhaar authentication is <em>not</em> claimed or assumed to be the technical cause of the name truncation.
+    </p>
+  </section>
+
+  <!-- SECTION 3: EXISTING EXPERIENCE (AS-IS) -->
+  <section id="as-is" class="case-section">
+    <div class="section-label">Section 03</div>
+    <h2>Existing Experience (AS-IS)</h2>
+    <p>
+      Tracing the documented end-to-end journey reveals that the user interacts with a complete name during profile setup, passes through booking without any name-comparison checkpoint, and only discovers the shortened string after payment and ticket generation.
+    </p>
+
+    <div class="flow-wrapper">
+      <div class="flow-track">
+        <div class="flow-node">1. Open IRCTC<small>Launch mobile app</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">2. Passenger Master List<small>Navigate to saved profiles</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">3. Add Passenger Info<small>Create traveller entry</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node verified-step">4. Enter Complete Name<small>PRIYANKA CHAKRABORTY</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node verified-step">5. Identity Verification<small>Aadhaar Status: Verified</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">6. Search Train<small>SC &rarr; VSKP (20834)</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">7. Select Journey Details<small>Date, Class CC, Quota GN</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">8. Select from Master List<small>Pick saved traveller</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">9. Proceed with Booking<small>Complete checkout</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">10. Generate Ticket<small>ERS PNR 48291045XX</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node issue">11. Inconsistency Visible<small>ERS prints: PRIYANKA CHAKRAB</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: UX PROBLEM ANALYSIS & HEURISTICS -->
+  <section id="analysis" class="case-section">
+    <div class="section-label">Section 04</div>
+    <h2>UX Problem Analysis &amp; Heuristic Evaluation</h2>
+    <p>
+      Evaluating the observed workflow against Nielsen's Usability Heuristics highlights how a data-rendering gap directly impacts user expectations, error prevention, and trust.
+    </p>
+
+    <div class="grid-3">
+      <div class="card">
+        <span class="badge badge-info">Heuristic #4</span>
+        <h4>Consistency and Standards</h4>
+        <p><strong>Data Consistency:</strong> The same passenger entity is represented as <code>PRIYANKA CHAKRABORTY</code> in profile management and <code>PRIYANKA CHAKRAB</code> on the ticket output, violating cross-screen consistency.</p>
+      </div>
+      <div class="card">
+        <span class="badge badge-info">Heuristic #2</span>
+        <h4>Match Between System &amp; Real World</h4>
+        <p><strong>User Expectations:</strong> Travellers expect a verified profile name to match their real-world government ID on official travel documents without silent abbreviation.</p>
+      </div>
+      <div class="card">
+        <span class="badge badge-danger">Heuristic #5</span>
+        <h4>Error Prevention</h4>
+        <p><strong>Passenger Identity Accuracy:</strong> No pre-booking check warns the user that the ticket name differs from the Master List name before payment is finalized.</p>
+      </div>
+      <div class="card">
+        <span class="badge badge-warn">Heuristic #1</span>
+        <h4>Visibility of System Status</h4>
+        <p><strong>Booking Confirmation Experience:</strong> While Aadhaar verification is clearly surfaced, the system never communicates downstream character limits or name modifications.</p>
+      </div>
+      <div class="card">
+        <span class="badge badge-warn">Trust &amp; Assurance</span>
+        <h4>User Trust</h4>
+        <p>When a "Verified" badge is followed by a truncated name on a paid ticket, users lose confidence in whether their identity data is preserved reliably.</p>
+      </div>
+      <div class="card">
+        <span class="badge badge-danger">Travel Compliance</span>
+        <h4>On-Board Verification Risk</h4>
+        <p>The ERS explicitly states that prescribed original ID proof is required during travel. A four-letter omission invites scrutiny during ticket inspection.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: USER JOURNEY MAP -->
+  <section id="journey" class="case-section">
+    <div class="section-label">Section 05</div>
+    <h2>User Journey Map (Grounded in Observed Evidence)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Journey Dimension</th>
+            <th>Stage 1: Profile &amp; Verification</th>
+            <th>Stage 2: Train &amp; Journey Setup</th>
+            <th>Stage 3: Passenger Selection &amp; Booking</th>
+            <th>Stage 4: Ticket Generation (ERS)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>User Actions</strong></td>
+            <td>Opens Master List, enters full name (<code>PRIYANKA CHAKRABORTY</code>), and verifies Aadhaar status.</td>
+            <td>Searches Train <code>20834</code> (<code>SC &rarr; VSKP</code>), chooses date (<code>22-Nov-2026</code>) and Chair Car (<code>CC</code>).</td>
+            <td>Selects saved passenger from Master List and proceeds through booking payment.</td>
+            <td>Opens generated ERS (<code>PNR 48291045XX</code>) to inspect confirmed ticket details.</td>
+          </tr>
+          <tr>
+            <td><strong>Touchpoints</strong></td>
+            <td>Passenger Master List screen &amp; Add/Verify entry form.</td>
+            <td>Train search, class/quota selection, and journey summary screens.</td>
+            <td>Passenger selection list &amp; booking confirmation checkout.</td>
+            <td>Electronic Reservation Slip (ERS) document.</td>
+          </tr>
+          <tr>
+            <td><strong>User Expectations</strong></td>
+            <td>Full name and <code>Verified</code> status are stored accurately for future bookings.</td>
+            <td>Selected train, boarding station, and class carry forward accurately.</td>
+            <td>Saved profile name transfers intact onto the reservation.</td>
+            <td>Printed ticket displays full passenger name matching official ID proof.</td>
+          </tr>
+          <tr>
+            <td><strong>Pain Points</strong></td>
+            <td>No indication of any downstream character cap or ticket formatting constraint.</td>
+            <td>No visibility into how passenger names will render on the final ticket.</td>
+            <td>No dedicated review step comparing saved Master List name vs. ticket output name.</td>
+            <td>ERS displays <code>PRIYANKA CHAKRAB</code> (missing <code>ORTY</code>) without explanation.</td>
+          </tr>
+          <tr>
+            <td><strong>Emotional Experience</strong></td>
+            <td>Confident &amp; assured (green <em>Verified</em> checkmark reinforces accuracy).</td>
+            <td>Focused &amp; task-oriented.</td>
+            <td>Routine &amp; trusting of saved Master List data.</td>
+            <td>Surprised &amp; concerned about potential ID mismatch during travel.</td>
+          </tr>
+          <tr>
+            <td><strong>Improvement Opportunities</strong></td>
+            <td>Provide clear ID-matching guidance and confirm full-name capture.</td>
+            <td>Maintain fast train search while preparing structured passenger review.</td>
+            <td>Add a <strong>Passenger Details Review</strong> and pre-payment <strong>Name Match Check</strong>.</td>
+            <td>Render complete passenger name consistently and display verification alignment.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 6: REDESIGNED EXPERIENCE (TO-BE) -->
+  <section id="to-be" class="case-section">
+    <div class="section-label">Section 06</div>
+    <h2>Redesigned Experience (TO-BE — Proposed Flow)</h2>
+    <p>
+      The proposed To-Be architecture preserves the speed of using saved profiles while introducing two preventive safeguards: a structured <strong>Passenger Details Review</strong> screen and an automated <strong>Name Consistency Check</strong> prior to payment confirmation.
+    </p>
+
+    <div class="flow-wrapper">
+      <div class="flow-track">
+        <div class="flow-node">1. Open Master List</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">2. Add Passenger Details</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">3. Enter Complete Name<small>As per ID document</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">4. Identity Verification</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">5. Save Passenger Profile</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">6. Search &amp; Select Train</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">7. Select Saved Passenger</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node new-step">8. Display Full Info<small>Unclipped profile details</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node new-step">9. Passenger Detail Review<small>Dedicated pre-pay check</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node new-step">10. Validate Name Match<small>Booking == Saved Name</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">11. Confirm Booking<small>With mismatch safeguard</small></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node verified-step">12. Generate Complete Ticket<small>PRIYANKA CHAKRABORTY</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXISTING SCREENS RECONSTRUCTION (PRIMARY EVIDENCE) -->
+  <section id="existing-ui" class="case-section">
+    <div class="section-label">Primary Evidence Reconstruction</div>
+    <h2>Existing Experience Screens (AS-IS Evidence)</h2>
+    <p>
+      Clean visual reconstruction of the two uploaded primary evidence screens illustrating where the full name appears versus where the missing letters occur. *(Sensitive personal numbers are omitted; secondary entries anonymized.)*
+    </p>
+
+    <div class="screens-grid">
+      <!-- Existing Screen 1: Master List -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Existing Evidence 01</span>
+          <h4>IRCTC Passenger Master List</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status irctc-orange">
+              <span>10:28</span>
+              <span>5G • Wi-Fi • 100%</span>
+            </div>
+            <div class="irctc-appbar">
+              <span>&lsaquo;</span>
+              <span>MASTER LIST</span>
+              <span style="font-size:0.72rem; font-weight:600;">Add Passenger</span>
+            </div>
+
+            <div class="irctc-row">
+              <div>
+                <strong>PASSENGER A (SAMPLE)</strong>
+                <p>58 years, F, LB, NOCONC, Veg<br>Aadhaar ID/Virtual ID | Re Verify<br>Date of Birth on Id: 12-May-1967</p>
+              </div>
+              <span class="irctc-edit">Edit</span>
+            </div>
+
+            <div class="irctc-row">
+              <div>
+                <strong>PASSENGER B (SAMPLE)</strong>
+                <p>52 years, M, SL, NOCONC, Veg<br>Aadhaar ID/Virtual ID | Not Verified &#9673;<br>Date of Birth on Id: 09-Nov-1973</p>
+              </div>
+              <span class="irctc-edit">Edit</span>
+            </div>
+
+            <div class="irctc-row highlight-row">
+              <div>
+                <strong>PRIYANKA CHAKRABORTY</strong>
+                <p>34 years, F, NC, NOCONC, Veg<br>Aadhaar ID/Virtual ID | <span style="color:#15803d; font-weight:700;">Verified &#10004;</span><br>Date of Birth on Id: 14-Aug-1992</p>
+              </div>
+              <span class="irctc-edit">Edit</span>
+            </div>
+
+            <div class="irctc-info-banner">
+              User can book up to 24 tickets in a month, if IRCTC User ID has been verified with Aadhaar and at least one of the passengers is Aadhaar verified in ticket.
+            </div>
+
+            <div class="irctc-legend">
+              <strong style="display:block; margin-bottom:0.25rem;">Verification Status:</strong>
+              <span style="color:#15803d; font-weight:700;">&#10004;</span> Verified - Passenger is aadhaar verified.
+            </div>
+
+            <div class="irctc-tabbar">
+              <div>Home</div>
+              <div class="active">Account</div>
+              <div>Shop</div>
+              <div>Transactions</div>
+              <div>More</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing Screen 2: Generated ERS -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Existing Evidence 02</span>
+          <h4>Generated Electronic Reservation Slip (ERS)</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status ers-white">
+              <span>ERS PDF</span>
+              <span>PNR: 48291045XX</span>
+            </div>
+            <div class="ers-doc">
+              <div class="ers-header">
+                <div>
+                  <div class="ers-title">Electronic Reservation Slip (ERS)</div>
+                  <div style="font-size:0.62rem; color:#475569;">Normal User • General (GN)</div>
+                </div>
+                <div class="qr-placeholder" title="QR Code"></div>
+              </div>
+
+              <div class="ers-grid">
+                <div>
+                  <span>Booked From</span>
+                  <strong>SECUNDERABAD JN. (SC)</strong>
+                </div>
+                <div>
+                  <span>To</span>
+                  <strong>VISAKHAPATNAM (VSKP)</strong>
+                </div>
+                <div>
+                  <span>Train No./Name</span>
+                  <strong>20834 / VANDE BHARAT EX</strong>
+                </div>
+                <div>
+                  <span>Start Date / Class</span>
+                  <strong>22-Nov-2026 • CC</strong>
+                </div>
+              </div>
+
+              <strong style="font-size:0.71rem; color:#0f172a;">Passenger Details</strong>
+              <table class="ers-pax-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Age/Sex</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1.</td>
+                    <td><span class="truncated-pill">PRIYANKA CHAKRAB</span></td>
+                    <td>34 / F<br><span style="font-size:0.58rem; color:#475569;">VEG</span></td>
+                    <td><strong>CNF/C17/46</strong><br><span style="font-size:0.58rem;">NO CHOICE</span></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:0.45rem; font-size:0.64rem; color:#991b1b; margin-bottom:0.55rem;">
+                <strong>Observed Discrepancy:</strong> Printed name is 16 chars (<code>PRIYANKA CHAKRAB</code>) vs. 20 chars in Master List (<code>PRIYANKA CHAKRABORTY</code>).
+              </div>
+
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0.45rem; font-size:0.62rem; color:#334155;">
+                <strong>Payment:</strong> Total Fare ₹1,730.85 (Incl. GST)<br>
+                <strong>Note:</strong> Prescribed original ID proof is required while travelling along with ERS.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: HIGH-FIDELITY UI REDESIGN -->
+  <section id="redesign-ui" class="case-section">
+    <div class="section-label">Section 07 • Proposed Conceptual UI</div>
+    <h2>High-Fidelity Mobile UI Redesign (6 Screens)</h2>
+    <p>
+      <strong>Concept Disclaimer:</strong> The following six high-fidelity mobile screens represent a <em>proposed conceptual redesign</em> created for portfolio demonstration. They have not been implemented by IRCTC or validated through live usability testing.
+    </p>
+
+    <div class="screens-grid">
+
+      <!-- SCREEN 1: Add Passenger -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 01</span>
+          <h4>Add Passenger</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">&larr; Add Passenger</span>
+              <span class="mod-step-pill">Master List</span>
+            </div>
+            <div class="mod-body">
+              <p class="mod-helper">Enter details exactly as printed on your valid government ID document.</p>
+
+              <div class="mod-field">
+                <label class="mod-label">Full Name (As Per ID) *</label>
+                <div class="mod-input valid">PRIYANKA CHAKRABORTY</div>
+                <span class="mod-field-note">&#10003; Full 20-character name preserved</span>
+              </div>
+
+              <div class="mod-row-2">
+                <div class="mod-field">
+                  <label class="mod-label">Date of Birth *</label>
+                  <div class="mod-input">14-Aug-1992</div>
+                </div>
+                <div class="mod-field">
+                  <label class="mod-label">Gender *</label>
+                  <div class="mod-input">Female (F) &#9662;</div>
+                </div>
+              </div>
+
+              <div class="mod-card">
+                <div class="mod-card-head">
+                  <strong style="font-size:0.75rem;">Identity Document Details</strong>
+                  <span class="mod-pill ok">&#10003; Verified</span>
+                </div>
+                <div class="kv-line"><span>Document Type</span><strong>Aadhaar / Virtual ID</strong></div>
+                <div class="kv-line"><span>Name Sync</span><strong>Matches ID Record</strong></div>
+              </div>
+
+              <div class="mod-btn-primary">Save Passenger Profile</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: Passenger Master List -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 02</span>
+          <h4>Passenger Master List</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">&larr; Passenger Master List</span>
+              <span class="mod-step-pill">+ Add New</span>
+            </div>
+            <div class="mod-body">
+              <div class="mod-card match-ok">
+                <div class="mod-card-head">
+                  <div class="mod-name">PRIYANKA CHAKRABORTY</div>
+                  <span style="color:#1d4ed8; font-weight:700; font-size:0.72rem;">Edit</span>
+                </div>
+                <div class="mod-sub">34 yrs &bull; Female &bull; DOB: 14-Aug-1992</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="mod-pill ok">&#10003; Aadhaar Verified</span>
+                  <span style="font-size:0.67rem; color:#475569;">NC &bull; Veg</span>
+                </div>
+              </div>
+
+              <div class="mod-card">
+                <div class="mod-card-head">
+                  <div class="mod-name">SAMPLE PASSENGER TWO</div>
+                  <span style="color:#1d4ed8; font-weight:700; font-size:0.72rem;">Edit</span>
+                </div>
+                <div class="mod-sub">58 yrs &bull; Female &bull; DOB: 12-May-1967</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="mod-pill warn">! Re-Verify Needed</span>
+                  <span style="font-size:0.67rem; color:#475569;">LB &bull; Veg</span>
+                </div>
+              </div>
+
+              <div class="mod-card">
+                <div class="mod-card-head">
+                  <div class="mod-name">SAMPLE PASSENGER THREE</div>
+                  <span style="color:#1d4ed8; font-weight:700; font-size:0.72rem;">Edit</span>
+                </div>
+                <div class="mod-sub">52 yrs &bull; Male &bull; DOB: 09-Nov-1973</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="mod-pill neutral">&#9675; Not Verified</span>
+                  <span style="font-size:0.67rem; color:#475569;">SL &bull; Veg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: Passenger Selection -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 03</span>
+          <h4>Passenger Selection</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">&larr; Select Passengers</span>
+              <span class="mod-step-pill">Step 1 of 3</span>
+            </div>
+            <div class="mod-body">
+              <div style="font-size:0.71rem; font-weight:700; color:#1e3a8a; background:#dbeafe; padding:0.45rem 0.65rem; border-radius:8px;">
+                20834 Vande Bharat Ex &bull; SC &rarr; VSKP &bull; 22 Nov
+              </div>
+
+              <div class="mod-card selected">
+                <div class="mod-card-head">
+                  <div class="mod-name">&#9745; PRIYANKA CHAKRABORTY</div>
+                  <span style="color:#1d4ed8; font-weight:700; font-size:0.72rem;">Edit</span>
+                </div>
+                <div class="mod-sub">34 yrs &bull; Female &bull; Berth: NC &bull; Veg</div>
+                <span class="mod-pill ok">&#10003; Aadhaar Verified</span>
+              </div>
+
+              <div class="mod-card">
+                <div class="mod-card-head">
+                  <div class="mod-name">&#9744; SAMPLE PASSENGER TWO</div>
+                  <span style="color:#1d4ed8; font-weight:700; font-size:0.72rem;">Edit</span>
+                </div>
+                <div class="mod-sub">58 yrs &bull; Female &bull; Berth: LB &bull; Veg</div>
+                <span class="mod-pill warn">! Re-Verify Needed</span>
+              </div>
+
+              <div style="font-size:0.7rem; color:#15803d; font-weight:600; text-align:center;">
+                1 Passenger Selected &bull; Full Name Ready for Review
+              </div>
+
+              <div class="mod-btn-primary">Continue to Detail Review</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: Passenger Details Review -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 04</span>
+          <h4>Passenger Details Review</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">&larr; Passenger Details Review</span>
+              <span class="mod-step-pill">Step 2 of 3</span>
+            </div>
+            <div class="mod-body">
+              <p class="mod-helper">Review passenger identity details before proceeding to payment.</p>
+
+              <div class="mod-card">
+                <div class="mod-card-head">
+                  <span class="mod-pill blue">Passenger 1</span>
+                  <span class="mod-pill ok">&#10003; Verified</span>
+                </div>
+                <div class="kv-line"><span>Full Name</span><strong>PRIYANKA CHAKRABORTY</strong></div>
+                <div class="kv-line"><span>Age / Gender</span><strong>34 yrs / Female</strong></div>
+                <div class="kv-line"><span>Date of Birth</span><strong>14-Aug-1992</strong></div>
+                <div class="kv-line"><span>Preferences</span><strong>NC Berth &bull; Veg Meal</strong></div>
+                <span class="mod-btn-secondary">&#9998; Edit Passenger Details</span>
+              </div>
+
+              <div class="mod-card match-ok" style="padding:0.6rem 0.75rem;">
+                <strong style="font-size:0.73rem; color:#166534;">&#10003; Profile Consistency Verified</strong>
+                <p style="font-size:0.68rem; color:#15803d; margin:0.15rem 0 0;">Booking name matches saved Master List profile (20/20 characters).</p>
+              </div>
+
+              <div class="mod-btn-primary">Confirm Details &amp; Continue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: Booking Confirmation -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 05</span>
+          <h4>Booking Confirmation &amp; Check</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">&larr; Booking Confirmation</span>
+              <span class="mod-step-pill">Step 3 of 3</span>
+            </div>
+            <div class="mod-body">
+              <div class="mod-card match-ok">
+                <div class="mod-card-head">
+                  <strong style="font-size:0.75rem; color:#14532d;">Ticket Name Verification</strong>
+                  <span class="mod-pill ok">Exact Match</span>
+                </div>
+                <div class="kv-line"><span>Saved Profile</span><strong>PRIYANKA CHAKRABORTY</strong></div>
+                <div class="kv-line"><span>Ticket Output</span><strong>PRIYANKA CHAKRABORTY</strong></div>
+              </div>
+
+              <div class="mod-card match-warn">
+                <div class="mod-card-head">
+                  <strong style="font-size:0.73rem; color:#92400e;">&#9888; Safeguard State (If Mismatch)</strong>
+                  <span class="mod-pill warn">Alert</span>
+                </div>
+                <p style="font-size:0.67rem; color:#78350f; margin:0;">If ticket string differs from saved profile, booking pauses with a 1-tap <strong>Fix Name</strong> action before payment.</p>
+              </div>
+
+              <div class="mod-card">
+                <div class="kv-line"><span>Train</span><strong>20834 Vande Bharat Ex</strong></div>
+                <div class="kv-line"><span>Total Fare</span><strong>₹1,730.85</strong></div>
+              </div>
+
+              <div class="mod-btn-primary">Confirm &amp; Pay ₹1,730.85</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 6: Final Ticket Preview -->
+      <div class="screen-showcase-item">
+        <div class="screen-caption">
+          <span>Proposed Concept • Screen 06</span>
+          <h4>Final Ticket Preview (ERS)</h4>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="p-status modern-blue"><span>9:41</span><span>5G • 100%</span></div>
+            <div class="mod-appbar">
+              <span class="mod-appbar-title">Electronic Reservation Slip</span>
+              <span class="mod-step-pill">Confirmed</span>
+            </div>
+            <div class="mod-body">
+              <div class="mod-card" style="border-top:3px solid #16a34a;">
+                <div class="mod-card-head">
+                  <div>
+                    <span style="font-size:0.64rem; color:#64748b;">PNR NUMBER</span>
+                    <div style="font-weight:800; font-size:0.92rem; color:#0f172a;">48291045XX</div>
+                  </div>
+                  <span class="mod-pill ok">CNF / C17 / 46</span>
+                </div>
+                <div class="kv-line"><span>Train</span><strong>20834 / VANDE BHARAT EX</strong></div>
+                <div class="kv-line"><span>Route</span><strong>SC &rarr; VSKP (22-Nov-2026)</strong></div>
+              </div>
+
+              <div class="mod-card match-ok">
+                <span style="font-size:0.64rem; font-weight:700; color:#15803d; text-transform:uppercase;">Passenger #1 • Verified Identity</span>
+                <div class="mod-name" style="font-size:0.86rem; margin:0.2rem 0;">PRIYANKA CHAKRABORTY</div>
+                <div class="mod-sub" style="margin-bottom:0.25rem;">34 yrs &bull; Female &bull; Veg &bull; Chair Car (CC)</div>
+                <span class="mod-pill ok">&#10003; Matches Master List Profile</span>
+              </div>
+
+              <p style="font-size:0.66rem; color:#475569; margin:0;">
+                Please carry prescribed original ID proof matching the passenger name above during travel.
+              </p>
+
+              <div class="mod-btn-primary">Download / Share Ticket PDF</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 8: DESIGN IMPROVEMENTS RATIONALE -->
+  <section id="rationale" class="case-section">
+    <div class="section-label">Section 08</div>
+    <h2>Screen-by-Screen Design Rationale</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Screen</th>
+            <th>What Changed?</th>
+            <th>Why Was It Changed?</th>
+            <th>User Problem Solved</th>
+            <th>Experience Improvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Add Passenger</strong></td>
+            <td>Added explicit ID-matching instructions, structured labels, and real-time full-name confirmation.</td>
+            <td>Users need clarity at entry that full names are captured completely for travel records.</td>
+            <td>Eliminates uncertainty around whether longer names are accepted intact.</td>
+            <td>Establishes a clean, verifiable source of truth from initial setup.</td>
+          </tr>
+          <tr>
+            <td><strong>2. Passenger Master List</strong></td>
+            <td>Grouped passenger metadata into scannable cards with distinct verification status pills and clear Edit actions.</td>
+            <td>Dense text rows with mixed icon styles slow down verification checks during booking.</td>
+            <td>Makes it effortless to verify passenger name accuracy and Aadhaar status at a glance.</td>
+            <td>Improves visual hierarchy, readability, and confidence in saved profiles.</td>
+          </tr>
+          <tr>
+            <td><strong>3. Passenger Selection</strong></td>
+            <td>Added clear selection states, full unclipped passenger names, verification badges, and inline Edit controls.</td>
+            <td>Selecting a traveller should confirm complete identity details before proceeding.</td>
+            <td>Prevents accidental booking with unverified or incomplete passenger records.</td>
+            <td>Streamlines passenger selection with transparent identity cues.</td>
+          </tr>
+          <tr>
+            <td><strong>4. Passenger Details Review</strong></td>
+            <td>Introduced a dedicated pre-payment review card displaying full name, demographics, and profile match status.</td>
+            <td>Skipping straight to payment hides potential data discrepancies until after ticketing.</td>
+            <td>Gives travellers a deliberate checkpoint to catch identity errors before paying.</td>
+            <td>Shifts error detection from reactive post-booking to proactive review.</td>
+          </tr>
+          <tr>
+            <td><strong>5. Booking Confirmation</strong></td>
+            <td>Added a Ticket Name Verification module comparing saved profile name vs. ticket output name, plus a mismatch alert state.</td>
+            <td>Resolving a shortened name before ticket issuance avoids post-booking stress.</td>
+            <td>Prevents silent truncation (<code>PRIYANKA CHAKRAB</code>) from reaching final issuance unnoticed.</td>
+            <td>Builds strong transactional trust via visible pre-confirmation safeguards.</td>
+          </tr>
+          <tr>
+            <td><strong>6. Final Ticket Preview</strong></td>
+            <td>Elevated full passenger name prominence alongside PNR, seat status, verification badge, and ID-proof guidance.</td>
+            <td>The ERS is inspected during travel and must align clearly with the traveller's physical/digital ID.</td>
+            <td>Eliminates confusion caused by missing letters on the generated ERS.</td>
+            <td>Delivers a cohesive, legible, and trustworthy travel document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 9: EXISTING VS REDESIGNED COMPARISON -->
+  <section id="comparison" class="case-section">
+    <div class="section-label">Section 09</div>
+    <h2>Existing vs. Redesigned Experience Comparison</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Evaluation Criteria</th>
+            <th>Existing Experience (AS-IS)</th>
+            <th>Redesigned Experience (TO-BE — Proposed Concept)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Passenger name entry</strong></td>
+            <td>Full name saved in Master List (<code>PRIYANKA CHAKRABORTY</code>) with no feedback on downstream ticket rendering.</td>
+            <td>Explicit ID-matching prompt, clear field labels, and full-name capture feedback.</td>
+          </tr>
+          <tr>
+            <td><strong>Passenger profile management</strong></td>
+            <td>Compact inline text rows displaying demographics, Aadhaar status, DOB, and Edit link.</td>
+            <td>Structured profile cards with strong typographic hierarchy and color-coded status badges.</td>
+          </tr>
+          <tr>
+            <td><strong>Passenger selection</strong></td>
+            <td>Selects passenger from Master List to proceed directly into booking flow.</td>
+            <td>Clear checkbox states, full unclipped names, verification badges, and inline editing.</td>
+          </tr>
+          <tr>
+            <td><strong>Identity verification visibility</strong></td>
+            <td>Displayed on Master List (<em>Verified - Passenger is aadhaar verified</em>), absent from ERS review.</td>
+            <td>Carried consistently across Master List, selection, review, confirmation, and ticket preview.</td>
+          </tr>
+          <tr>
+            <td><strong>Booking review</strong></td>
+            <td>No dedicated passenger-level review step verifying name fidelity before payment.</td>
+            <td>Dedicated <strong>Passenger Details Review</strong> screen validating full name and profile match.</td>
+          </tr>
+          <tr>
+            <td><strong>Name consistency</strong></td>
+            <td>Observed mismatch: <code>PRIYANKA CHAKRABORTY</code> (Master List) vs. <code>PRIYANKA CHAKRAB</code> (ERS).</td>
+            <td>End-to-end consistency ensuring the complete 20-character name appears on the final ticket.</td>
+          </tr>
+          <tr>
+            <td><strong>Error prevention</strong></td>
+            <td>Reactive discovery only after ticket generation is complete.</td>
+            <td>Proactive pre-confirmation mismatch check with a direct correction path before payment.</td>
+          </tr>
+          <tr>
+            <td><strong>Ticket generation</strong></td>
+            <td>Prints shortened name on ERS without warning or explanation.</td>
+            <td>Clean, scannable ERS preview displaying complete passenger name and match confirmation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 10: SUCCESS METRICS -->
+  <section id="metrics" class="case-section">
+    <div class="section-label">Section 10</div>
+    <h2>Proposed Success Metrics (KPIs)</h2>
+    <p>
+      If implemented and instrumented in a live environment, the impact of these improvements would be measured through the following product and UX KPIs *(no baseline values or projected percentages are fabricated)*:
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <h4>Passenger Name Mismatch Rate</h4>
+        <p>Share of completed bookings where the printed ERS passenger name differs from the saved Master List full name.</p>
+      </div>
+      <div class="card">
+        <h4>Booking Completion Rate</h4>
+        <p>Percentage of users initiating passenger selection who successfully complete ticket generation.</p>
+      </div>
+      <div class="card">
+        <h4>Passenger Detail Correction Rate</h4>
+        <p>Frequency of users editing or resolving name discrepancies during the Review or Confirmation steps prior to payment.</p>
+      </div>
+      <div class="card">
+        <h4>Booking Abandonment Rate</h4>
+        <p>Drop-off rate across passenger selection, detail review, and confirmation screens.</p>
+      </div>
+      <div class="card">
+        <h4>Identity-Related Support Complaints</h4>
+        <p>Volume of customer support inquiries citing shortened, truncated, or mismatched names on issued tickets.</p>
+      </div>
+      <div class="card">
+        <h4>Successful Passenger Verification Rate</h4>
+        <p>Percentage of Master List profiles completing identity verification smoothly without repeated re-verification loops.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 11: FINAL LEARNINGS -->
+  <section id="learnings" class="case-section">
+    <div class="section-label">Section 11</div>
+    <h2>Final Learnings &amp; Product Design Takeaways</h2>
+    <ul>
+      <li><strong>Observing Real-World Usability Problems:</strong> Everyday transactional flows often conceal edge-case friction—such as longer passenger names—that only surfaces when comparing profile storage against real document outputs.</li>
+      <li><strong>Bridging Expectations and System Behaviour:</strong> Users treat a saved, verified profile as an authoritative record. Any silent discrepancy between stored data and printed output erodes confidence.</li>
+      <li><strong>UX and Data Integrity Work Together:</strong> Great UI design cannot replace backend data consistency, but transparent field validation, review checkpoints, and status indicators expose and prevent integrity gaps before they affect users.</li>
+      <li><strong>Preventive Design Over Reactive Friction:</strong> Catching a potential name mismatch before payment eliminates travel-day anxiety far more effectively than post-booking explanations.</li>
+      <li><strong>Designing for Trust in High-Stakes Workflows:</strong> In rail ticketing, where identity verification directly governs boarding compliance, clarity and consistency are foundational to user trust.</li>
+    </ul>
+  </section>
+
+  <!-- LINKEDIN POST -->
+  <section id="linkedin" class="case-section">
+    <div class="section-label">Portfolio Distribution Copy</div>
+    <h2>LinkedIn Post</h2>
+    <div class="linkedin-card">
+      <div class="linkedin-header">
+        <div class="li-badge">in</div>
+        <div>
+          <strong>UI/UX Case Study Showcase</strong>
+          <div style="font-size:0.78rem; color:#64748b;">Product Design &bull; Mobile UX &bull; Data Consistency</div>
+        </div>
+      </div>
+      <p style="color:#0f172a;">
+        Ever saved your full name in a booking profile, only to see the last few letters disappear on your final ticket? &#128646;
+      </p>
+      <p style="color:#0f172a;">
+        While booking a train ticket on IRCTC, I noticed a subtle but high-stakes UX &amp; data consistency gap: a passenger profile saved in the Master List as <strong>PRIYANKA CHAKRABORTY</strong> (with Aadhaar status showing <em>Verified</em>) was printed as <strong>PRIYANKA CHAKRAB</strong> on the generated Electronic Reservation Slip (ERS).
+      </p>
+      <p style="color:#0f172a;">
+        Because rail travel requires carrying valid government ID proof matching ticket details, even four missing letters can create unnecessary friction and anxiety for passengers. Rather than guessing a single backend cause—whether character limits, string truncation, or data-mapping rules—I focused on the user-facing gap: there is no pre-booking checkpoint validating that the ticket name matches the saved profile before payment.
+      </p>
+      <p style="color:#0f172a;">
+        In my new case study, <strong>The Missing Letters</strong>, I document the real-world evidence, evaluate the flow using Nielsen's usability heuristics, and propose six mobile UI concepts—introducing a dedicated <strong>Passenger Details Review</strong> step and a pre-payment <strong>Ticket Name Check</strong> to catch mismatches before confirmation. <em>(Conceptual redesign; not affiliated with or implemented by IRCTC.)</em>
+      </p>
+      <p style="color:#0f172a; margin-bottom:0;">
+        How do you design safeguards for data integrity in high-trust transactional products?<br>
+        <span style="color:#0a66c2; font-weight:600;">#UXDesign #ProductDesign #CaseStudy #MobileUX #Usability #UserExperience #DesignThinking</span>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Designed by <a href="https://shirishagourishetti94.github.io/Portfolio/" style="color:var(--primary); font-weight:700; text-decoration:none;">Gourishetti Shirisha</a> &bull; UX Case Study: <strong>The Missing Letters</strong> &bull; Independent UX Observation &amp; Conceptual Redesign &bull; Proposed UI concepts shown for portfolio review only.
+</footer>
+
+</body>
+</html>
